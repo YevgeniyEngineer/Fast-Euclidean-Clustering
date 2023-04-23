@@ -111,8 +111,9 @@ template <typename CoordinateType, std::size_t number_of_dimensions> class FastE
                     }
                 }
 
-                if ((current_cluster_indices.size() >= min_cluster_size_) &&
-                    (current_cluster_indices.size() <= max_cluster_size_))
+                const auto number_of_cluster_indices = current_cluster_indices.size();
+                if ((number_of_cluster_indices >= min_cluster_size_) &&
+                    (number_of_cluster_indices <= max_cluster_size_))
                 {
 #if DEBUG_FAST_EUCLIDEAN_CLUSTERER
                     std::cout << "Added new cluster " << cluster_no << std::endl;
