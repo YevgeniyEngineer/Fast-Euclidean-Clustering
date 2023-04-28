@@ -111,7 +111,6 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
         FECUnionFind<std::uint32_t> uf(number_of_points);
 
         // Perform clustering
-        std::int32_t label = 0;
         for (std::uint32_t index = 0; index < number_of_points; ++index)
         {
             if (removed[index])
@@ -155,17 +154,14 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
                     }
                 }
             }
-
-            ++label;
         }
 
         // Merge indices
         std::unordered_map<std::uint32_t, std::vector<std::uint32_t>> temp_cluster_indices;
-        temp_cluster_indices.reserve(label);
         for (std::uint32_t index = 0; index < number_of_points; ++index)
         {
-            std::uint32_t label = uf.find(index);
-            temp_cluster_indices[label].push_back(index);
+            std::uint32_t root = uf.find(index);
+            temp_cluster_indices[root].push_back(index);
         }
 
         // Remove small clusters and update cluster_indices_ with valid clusters
