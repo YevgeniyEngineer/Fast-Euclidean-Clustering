@@ -1,5 +1,5 @@
 
-#include "fast_euclidean_clusterer.hpp"
+#include "fec_clustering.hpp"
 
 #include <chrono>
 #include <iostream>
@@ -11,21 +11,22 @@ int main()
     constexpr std::size_t NUMBER_OF_POINTS = 100'000;
     constexpr std::size_t NUMBER_OF_DIMENSIONS = 3;
     constexpr std::size_t NUMBER_OF_ITERATIONS = 100;
-    constexpr std::size_t MIN_CLUSTER_SIZE = 30;
+    constexpr std::size_t MIN_CLUSTER_SIZE = 3;
     constexpr std::size_t MAX_CLUSTER_SIZE = std::numeric_limits<std::size_t>::max();
 
-    constexpr double NEAREST_NEIGHBOUR_PROXIMITY = 0.2;
+    constexpr double NEAREST_NEIGHBOUR_PROXIMITY = 8.0;
 
     using CoordinateType = double;
-    using PointType = clustering::FEC_Point<CoordinateType, NUMBER_OF_DIMENSIONS>;
+    using PointType = clustering::FECPoint<CoordinateType, NUMBER_OF_DIMENSIONS>;
 
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<CoordinateType> dist(-10.0, 10.0);
+    std::uniform_real_distribution<CoordinateType> dist(-100.0, 100.0);
 
     std::vector<PointType> points;
 
-    points.reserve(NUMBER_OF_POINTS);
+    clustering::FECPointCloud<CoordinateType, NUMBER_OF_DIMENSIONS> cloud;
+    cloud.reserve(NUMBER_OF_POINTS);
     for (auto i = 0; i < NUMBER_OF_POINTS; ++i)
     {
         PointType point_cache;
@@ -33,17 +34,19 @@ int main()
         {
             point_cache[j] = dist(gen);
         }
-        points.emplace_back(point_cache);
+        cloud.push_back(point_cache);
     }
 
     auto t1 = std::chrono::steady_clock::now();
     {
-        clustering::FastEuclideanClusterer<CoordinateType, NUMBER_OF_DIMENSIONS> fast_euclidean_clusterer(
-            NEAREST_NEIGHBOUR_PROXIMITY, MIN_CLUSTER_SIZE, MAX_CLUSTER_SIZE, points);
+        clustering::FECClustering<CoordinateType, NUMBER_OF_DIMENSIONS> fast_euclidean_clustering(cloud);
+        fast_euclidean_clustering.clusterTolerance(NEAREST_NEIGHBOUR_PROXIMITY);
+        fast_euclidean_clustering.minClusterSize(MIN_CLUSTER_SIZE);
+        fast_euclidean_clustering.quality(1.0);
 
-        fast_euclidean_clusterer.formClusters();
+        fast_euclidean_clustering.formClusters();
 
-        auto cluster_indices = fast_euclidean_clusterer.getClusterIndices();
+        auto cluster_indices = fast_euclidean_clustering.getClusterIndices();
 
         std::cout << "Number of clusters: " << cluster_indices.size() << std::endl;
     }
