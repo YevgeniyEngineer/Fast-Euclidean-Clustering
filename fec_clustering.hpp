@@ -111,6 +111,11 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
 
         // Perform clustering
         std::uint32_t label = 0;
+
+        // Cluster indices
+        std::vector<std::uint32_t> indices;
+        indices.reserve(number_of_points);
+
         for (std::uint32_t index = 0; index < number_of_points; ++index)
         {
             if (removed[index])
@@ -121,8 +126,8 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
             // Push index to the queue
             queue.push(index);
 
-            // Cluster indices
-            std::vector<std::uint32_t> indices;
+            // Clear old cluster indices
+            indices.clear();
 
             while (!queue.empty())
             {
@@ -161,13 +166,14 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
                 }
             }
 
-            // Add initial index to cluster
-            indices.push_back(index);
-            indices.shrink_to_fit();
+            // Note that neighbours should return current index, hence no need to consider it
 
             // Add cluster to the group of clusters
-            cluster_indices_[label] = std::move(indices);
-            ++label;
+            const auto cluster_size = indices.size();
+            if (cluster_size >= min_cluster_size_ && cluster_size <= max_cluster_size_)
+            {
+                cluster_indices_[label++] = indices;
+            }
         }
 
         // // Merge indices
