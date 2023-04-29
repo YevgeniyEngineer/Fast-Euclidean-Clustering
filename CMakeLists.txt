@@ -8,7 +8,6 @@ add_library(${PROJECT_NAME}
     INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/fec_clustering.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/fec_point_cloud.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/fec_union_find.hpp
 )
 
 set_target_properties(${PROJECT_NAME}

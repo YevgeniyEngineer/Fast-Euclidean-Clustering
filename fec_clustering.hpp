@@ -2,7 +2,6 @@
 #define FAST_EUCLIDEAN_CLUSTERING_HPP
 
 #include "fec_point_cloud.hpp"
-#include "fec_union_find.hpp"
 
 #include <nanoflann.hpp>
 
@@ -88,33 +87,31 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
 
     void formClusters()
     {
-        // Clean old indices
         cluster_indices_.clear();
 
-        // Check if the number of points is sufficient for clustering
         if (points_.size() < 2 || max_cluster_size_ == 0)
         {
             return;
         }
 
-        const auto number_of_points = points_.size();
+        const auto number_of_points = static_cast<std::uint32_t>(points_.size());
+
         const CoordinateType cluster_tolerance_squared = cluster_tolerance_ * cluster_tolerance_;
+
         const auto nn_distance_threshold =
             static_cast<CoordinateType>(std::pow((1.0 - quality_) * cluster_tolerance_, 2.0));
 
         std::vector<bool> removed(number_of_points, false);
+
         std::vector<std::pair<std::uint32_t, CoordinateType>> neighbours;
+        neighbours.reserve(number_of_points);
+
+        std::vector<std::uint32_t> indices;
+        indices.reserve(number_of_points);
 
         std::queue<std::uint32_t> queue;
 
-        FECUnionFind<std::uint32_t> union_find(number_of_points);
-
-        // Perform clustering
         std::uint32_t label = 0;
-
-        // Cluster indices
-        std::vector<std::uint32_t> indices;
-        indices.reserve(number_of_points);
 
         for (std::uint32_t index = 0; index < number_of_points; ++index)
         {
@@ -123,10 +120,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
                 continue;
             }
 
-            // Push index to the queue
             queue.push(index);
-
-            // Clear old cluster indices
             indices.clear();
 
             while (!queue.empty())
@@ -151,8 +145,6 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
                     {
                         continue;
                     }
-
-                    // union_find.merge(index, q);
 
                     if (neighbours[i].second <= nn_distance_threshold)
                     {
