@@ -137,23 +137,23 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
                 const auto number_of_neighbours = kdtree_index_.radiusSearch(&points_[p][0], cluster_tolerance_squared,
                                                                              neighbours, search_parameters_);
 
-                for (std::uint32_t i = 0; i < number_of_neighbours; ++i)
+                if (number_of_neighbours > 0)
                 {
-                    const auto q = neighbours[i].first;
-
-                    if (removed[q])
+                    for (const auto &[neighbour_index, neighbour_distance] : neighbours)
                     {
-                        continue;
-                    }
-
-                    if (neighbours[i].second <= nn_distance_threshold)
-                    {
-                        removed[q] = true;
-                        indices.push_back(q);
-                    }
-                    else
-                    {
-                        queue.push(q);
+                        if (removed[neighbour_index])
+                        {
+                            continue;
+                        }
+                        if (neighbour_distance <= nn_distance_threshold)
+                        {
+                            removed[neighbour_index] = true;
+                            indices.push_back(neighbour_index);
+                        }
+                        else
+                        {
+                            queue.push(neighbour_index);
+                        }
                     }
                 }
             }
