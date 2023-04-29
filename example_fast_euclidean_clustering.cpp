@@ -40,9 +40,9 @@ int main()
     auto t1 = std::chrono::steady_clock::now();
     {
         clustering::FECClustering<CoordinateType, NUMBER_OF_DIMENSIONS> fast_euclidean_clustering(cloud);
-        fast_euclidean_clustering.clusterTolerance(NEAREST_NEIGHBOUR_PROXIMITY);
-        fast_euclidean_clustering.minClusterSize(MIN_CLUSTER_SIZE);
-        fast_euclidean_clustering.quality(1.0);
+        fast_euclidean_clustering.setClusterTolerance(NEAREST_NEIGHBOUR_PROXIMITY);
+        fast_euclidean_clustering.setMinClusterSize(MIN_CLUSTER_SIZE);
+        fast_euclidean_clustering.setQuality(1.0);
 
         fast_euclidean_clustering.formClusters();
 

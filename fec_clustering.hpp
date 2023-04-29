@@ -47,40 +47,40 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
         }
     }
 
-    CoordinateType clusterTolerance() const
+    CoordinateType getClusterTolerance() const noexcept
     {
         return cluster_tolerance_;
     }
-    void clusterTolerance(CoordinateType cluster_tolerance)
+    void setClusterTolerance(CoordinateType cluster_tolerance) noexcept
     {
         cluster_tolerance_ = cluster_tolerance;
     }
-    std::uint32_t maxClusterSize() const
+    std::uint32_t getMaxClusterSize() const noexcept
     {
         return max_cluster_size_;
     }
-    void maxClusterSize(std::uint32_t max_cluster_size)
+    void setMaxClusterSize(std::uint32_t max_cluster_size) noexcept
     {
         max_cluster_size_ = max_cluster_size;
     }
-    std::uint32_t minClusterSize() const
+    std::uint32_t getMinClusterSize() const noexcept
     {
         return min_cluster_size_;
     }
-    void minClusterSize(std::uint32_t min_cluster_size)
+    void setMinClusterSize(std::uint32_t min_cluster_size) noexcept
     {
         min_cluster_size_ = min_cluster_size;
     }
-    CoordinateType quality() const
+    CoordinateType getQuality() const noexcept
     {
         return quality_;
     }
-    void quality(CoordinateType quality)
+    void setQuality(CoordinateType quality) noexcept
     {
         quality_ = quality;
     }
 
-    const auto getClusterIndices() const
+    const ClusterT getClusterIndices() const noexcept
     {
         return cluster_indices_;
     }
