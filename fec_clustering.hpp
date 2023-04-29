@@ -10,13 +10,11 @@
 #include <cstdint>
 #include <iterator>
 #include <limits>
-#include <memory>
 #include <numeric>
 #include <queue>
 #include <stdexcept>
 #include <type_traits>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -27,13 +25,13 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
     static_assert(std::is_floating_point<CoordinateType>::value,
                   "FECClustering only works with floating point precision points");
 
-  public:
     using PointCloudT = FECPointCloud<CoordinateType, number_of_dimensions>;
-    using KdTree = nanoflann::KDTreeSingleIndexAdaptor<nanoflann::L2_Simple_Adaptor<CoordinateType, PointCloudT>,
-                                                       PointCloudT, number_of_dimensions>;
-    using KdTreePtr = typename std::shared_ptr<KdTree>;
-    using Indices = std::vector<std::uint32_t>;
+    using KdTreeT = nanoflann::KDTreeSingleIndexAdaptor<nanoflann::L2_Simple_Adaptor<CoordinateType, PointCloudT>,
+                                                        PointCloudT, number_of_dimensions>;
+    using IndicesT = std::vector<std::uint32_t>;
+    using ClusterT = std::unordered_map<std::uint32_t, IndicesT>;
 
+  public:
     FECClustering() = delete;
 
     /// @brief Constructor of FECClustering object
@@ -108,9 +106,10 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
 
         std::queue<std::uint32_t> queue;
 
-        FECUnionFind<std::uint32_t> uf(number_of_points);
+        FECUnionFind<std::uint32_t> union_find(number_of_points);
 
         // Perform clustering
+        std::int32_t label = 0;
         for (std::uint32_t index = 0; index < number_of_points; ++index)
         {
             if (removed[index])
@@ -118,6 +117,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
                 continue;
             }
 
+            // Push index to the queue
             queue.push(index);
 
             while (!queue.empty())
@@ -137,14 +137,15 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
                 for (std::uint32_t i = 0; i < number_of_neighbours; ++i)
                 {
                     const auto q = neighbours[i].first;
+
                     if (removed[q])
                     {
                         continue;
                     }
 
-                    uf.merge(index, q);
+                    union_find.merge(index, q);
 
-                    if (neighbours[i].second <= nn_distance_threshold)
+                    if (neighbours[i].second <= cluster_tolerance_squared) // nn_distance_threshold)
                     {
                         removed[q] = true;
                     }
@@ -157,10 +158,10 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
         }
 
         // Merge indices
-        std::unordered_map<std::uint32_t, std::vector<std::uint32_t>> temp_cluster_indices;
+        ClusterT temp_cluster_indices;
         for (std::uint32_t index = 0; index < number_of_points; ++index)
         {
-            std::uint32_t root = uf.find(index);
+            const auto root = union_find.find(index);
             temp_cluster_indices[root].push_back(index);
         }
 
@@ -182,12 +183,10 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
     std::uint32_t min_cluster_size_;
     CoordinateType quality_;
     PointCloudT points_;
-    nanoflann::KDTreeSingleIndexAdaptor<nanoflann::L2_Simple_Adaptor<CoordinateType, PointCloudT>, PointCloudT,
-                                        number_of_dimensions>
-        kdtree_index_;
+    KdTreeT kdtree_index_;
     nanoflann::SearchParams search_parameters_;
 
-    std::unordered_map<std::uint32_t, std::vector<std::uint32_t>> cluster_indices_;
+    ClusterT cluster_indices_;
 };
 } // namespace clustering
 

@@ -19,7 +19,7 @@ template <typename T, typename = std::enable_if_t<std::is_integral<T>::value>> c
 
     T find(const T x)
     {
-        auto &parent_x = parent_[x];
+        auto parent_x = parent_[x];
         if (parent_x != x)
         {
             parent_x = find(parent_x);
