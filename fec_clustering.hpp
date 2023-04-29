@@ -38,7 +38,8 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
     /// @param points Input point cloud compatible with nanoflann::KDTreeSingleIndexAdaptor
     explicit FECClustering(const PointCloudT &points)
         : cluster_tolerance_(0), max_cluster_size_(std::numeric_limits<std::uint32_t>::max()), min_cluster_size_(1),
-          quality_(0), points_(points), kdtree_index_(3, points_, nanoflann::KDTreeSingleIndexAdaptorParams(10))
+          quality_(0), points_(points), kdtree_index_(3, points_, nanoflann::KDTreeSingleIndexAdaptorParams(10)),
+          search_parameters_(32, 0.0f, false)
     {
         // Check if the number of points is sufficient for clustering
         if (points_.size() < 2)
@@ -109,7 +110,6 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
         FECUnionFind<std::uint32_t> union_find(number_of_points);
 
         // Perform clustering
-        std::int32_t label = 0;
         for (std::uint32_t index = 0; index < number_of_points; ++index)
         {
             if (removed[index])
@@ -145,7 +145,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
 
                     union_find.merge(index, q);
 
-                    if (neighbours[i].second <= cluster_tolerance_squared) // nn_distance_threshold)
+                    if (neighbours[i].second <= nn_distance_threshold)
                     {
                         removed[q] = true;
                     }
