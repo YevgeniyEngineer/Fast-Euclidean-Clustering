@@ -110,6 +110,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
         FECUnionFind<std::uint32_t> union_find(number_of_points);
 
         // Perform clustering
+        std::uint32_t label = 0;
         for (std::uint32_t index = 0; index < number_of_points; ++index)
         {
             if (removed[index])
@@ -119,6 +120,9 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
 
             // Push index to the queue
             queue.push(index);
+
+            // Cluster indices
+            std::vector<std::uint32_t> indices;
 
             while (!queue.empty())
             {
@@ -148,6 +152,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
                     if (neighbours[i].second <= nn_distance_threshold)
                     {
                         removed[q] = true;
+                        indices.push_back(q);
                     }
                     else
                     {
@@ -155,26 +160,34 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
                     }
                 }
             }
+
+            // Add initial index to cluster
+            indices.push_back(index);
+            indices.shrink_to_fit();
+
+            // Add cluster to the group of clusters
+            cluster_indices_[label] = std::move(indices);
+            ++label;
         }
 
-        // Merge indices
-        ClusterT temp_cluster_indices;
-        for (std::uint32_t index = 0; index < number_of_points; ++index)
-        {
-            const auto root = union_find.find(index);
-            temp_cluster_indices[root].push_back(index);
-        }
+        // // Merge indices
+        // ClusterT temp_cluster_indices;
+        // for (std::uint32_t index = 0; index < number_of_points; ++index)
+        // {
+        //     const auto root = union_find.find(index);
+        //     temp_cluster_indices[root].push_back(index);
+        // }
 
-        // Remove small clusters and update cluster_indices_ with valid clusters
-        cluster_indices_.clear();
-        for (auto &cluster : temp_cluster_indices)
-        {
-            const auto cluster_size = cluster.second.size();
-            if (cluster_size >= min_cluster_size_ && cluster_size <= max_cluster_size_)
-            {
-                cluster_indices_[cluster.first] = std::move(cluster.second);
-            }
-        }
+        // // Remove small clusters and update cluster_indices_ with valid clusters
+        // cluster_indices_.clear();
+        // for (auto &cluster : temp_cluster_indices)
+        // {
+        //     const auto cluster_size = cluster.second.size();
+        //     if (cluster_size >= min_cluster_size_ && cluster_size <= max_cluster_size_)
+        //     {
+        //         cluster_indices_[cluster.first] = std::move(cluster.second);
+        //     }
+        // }
     }
 
   private:
