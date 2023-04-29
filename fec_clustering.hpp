@@ -152,7 +152,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
                         continue;
                     }
 
-                    union_find.merge(index, q);
+                    // union_find.merge(index, q);
 
                     if (neighbours[i].second <= nn_distance_threshold)
                     {
@@ -167,36 +167,17 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
             }
 
             // Note that neighbours should return current index, hence no need to consider it
-
-            // Add cluster to the group of clusters
+            // Add cluster indices to the group of clusters for current label
             const auto cluster_size = indices.size();
             if (cluster_size >= min_cluster_size_ && cluster_size <= max_cluster_size_)
             {
                 cluster_indices_[label++] = indices;
             }
         }
-
-        // // Merge indices
-        // ClusterT temp_cluster_indices;
-        // for (std::uint32_t index = 0; index < number_of_points; ++index)
-        // {
-        //     const auto root = union_find.find(index);
-        //     temp_cluster_indices[root].push_back(index);
-        // }
-
-        // // Remove small clusters and update cluster_indices_ with valid clusters
-        // cluster_indices_.clear();
-        // for (auto &cluster : temp_cluster_indices)
-        // {
-        //     const auto cluster_size = cluster.second.size();
-        //     if (cluster_size >= min_cluster_size_ && cluster_size <= max_cluster_size_)
-        //     {
-        //         cluster_indices_[cluster.first] = std::move(cluster.second);
-        //     }
-        // }
     }
 
   private:
+    // Inputs
     CoordinateType cluster_tolerance_;
     std::uint32_t max_cluster_size_;
     std::uint32_t min_cluster_size_;
@@ -205,6 +186,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
     KdTreeT kdtree_index_;
     nanoflann::SearchParams search_parameters_;
 
+    // Output [label, indices] map
     ClusterT cluster_indices_;
 };
 } // namespace clustering

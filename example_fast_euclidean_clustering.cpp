@@ -14,7 +14,7 @@ int main()
     constexpr std::size_t MIN_CLUSTER_SIZE = 3;
     constexpr std::size_t MAX_CLUSTER_SIZE = std::numeric_limits<std::size_t>::max();
 
-    constexpr double NEAREST_NEIGHBOUR_PROXIMITY = 8.0;
+    constexpr double NEAREST_NEIGHBOUR_PROXIMITY = 5.0;
 
     using CoordinateType = double;
     using PointType = clustering::FECPoint<CoordinateType, NUMBER_OF_DIMENSIONS>;
