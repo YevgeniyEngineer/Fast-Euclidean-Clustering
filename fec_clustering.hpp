@@ -44,7 +44,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
     explicit FECClustering(const PointCloudT &points, CoordinateType distance_threshold = 0,
                            std::uint32_t min_cluster_size = 1,
                            std::uint32_t max_cluster_size = std::numeric_limits<std::uint32_t>::max(),
-                           CoordinateType quality = 0.5)
+                           double quality = 0.5)
         : distance_threshold_(distance_threshold), min_cluster_size_(min_cluster_size),
           max_cluster_size_(max_cluster_size), quality_(quality), points_(points),
           kdtree_index_(number_of_dimensions, points_, {MAX_LEAF_SIZE}),
@@ -172,7 +172,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
     CoordinateType distance_threshold_;
     std::uint32_t max_cluster_size_;
     std::uint32_t min_cluster_size_;
-    CoordinateType quality_;
+    double quality_;
     PointCloudT points_;
     KdTreeT kdtree_index_;
     nanoflann::SearchParams search_parameters_;
