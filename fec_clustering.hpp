@@ -75,6 +75,8 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
         }
     }
 
+    ~FECClustering() = default;
+
     const ClusterT getClusterIndices() const noexcept
     {
         return cluster_indices_;
