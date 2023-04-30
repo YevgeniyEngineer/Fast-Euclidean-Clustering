@@ -28,7 +28,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
     using KdTreeT = nanoflann::KDTreeSingleIndexAdaptor<nanoflann::L2_Simple_Adaptor<CoordinateType, PointCloudT>,
                                                         PointCloudT, number_of_dimensions>;
     using IndicesT = std::vector<std::uint32_t>;
-    using ClusterT = std::unordered_map<std::uint32_t, IndicesT>;
+    using ClusterT = std::unordered_map<std::int32_t, IndicesT>;
 
   public:
     static constexpr std::int32_t MAX_LEAF_SIZE = 10;
@@ -111,7 +111,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
 
         std::queue<std::uint32_t> queue;
 
-        std::uint32_t label = 0;
+        std::int32_t label = 0;
 
         for (std::uint32_t index = 0; index < number_of_points; ++index)
         {
