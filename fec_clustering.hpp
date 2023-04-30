@@ -57,19 +57,19 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
         {
             return;
         }
-        if (min_cluster_size < 1)
+        if (min_cluster_size_ < 1)
         {
             throw std::runtime_error("Minimum cluster size should not be less than 1");
         }
-        if (max_cluster_size < min_cluster_size)
+        if (max_cluster_size_ < min_cluster_size_)
         {
             throw std::runtime_error("Maximum cluster size should not be less than minimum cluster size");
         }
-        if (quality < 0.1)
+        if (quality_ < 0.1)
         {
             throw std::runtime_error("Minimum allowed cluster quality should not be less than 0.1");
         }
-        if (quality > 1.0)
+        if (quality_ > 1.0)
         {
             std::runtime_error("Maximum allowed cluster quality should not be greater than 1.0");
         }
