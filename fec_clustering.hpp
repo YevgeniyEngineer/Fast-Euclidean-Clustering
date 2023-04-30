@@ -19,7 +19,7 @@
 
 namespace clustering
 {
-template <typename CoordinateType, std::uint32_t number_of_dimensions> class FECClustering
+template <typename CoordinateType, std::uint32_t number_of_dimensions> class FECClustering final
 {
     static_assert(std::is_floating_point<CoordinateType>::value,
                   "FECClustering only works with floating point precision points");
