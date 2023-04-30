@@ -55,6 +55,12 @@ template <typename CoordinateType, std::size_t number_of_dimensions> struct FECP
         return points.size();
     }
 
+    /// @brief Returns if point cloud is empty
+    inline bool empty() const noexcept
+    {
+        return points.empty();
+    }
+
     /// @brief Adds a new point to the container
     inline void push_back(const PointType &point)
     {

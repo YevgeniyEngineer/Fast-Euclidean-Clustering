@@ -31,53 +31,48 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
     using ClusterT = std::unordered_map<std::uint32_t, IndicesT>;
 
   public:
+    static constexpr std::int32_t MAX_LEAF_SIZE = 10;
+    static constexpr std::int32_t IGNORE_CHECKS = 32;
+    static constexpr float USE_APPROXIMATE_SEARCH = 0.0f;
+    static constexpr bool SORT_RESULTS = false;
+
+    FECClustering(const FECClustering &) = delete;
+    FECClustering &operator=(const FECClustering &) = delete;
+    FECClustering(FECClustering &&) = delete;
+    FECClustering &operator=(FECClustering &&) = delete;
     FECClustering() = delete;
 
     /// @brief Constructor of FECClustering object
     /// @param points Input point cloud compatible with nanoflann::KDTreeSingleIndexAdaptor
-    explicit FECClustering(const PointCloudT &points)
-        : cluster_tolerance_(0), max_cluster_size_(std::numeric_limits<std::uint32_t>::max()), min_cluster_size_(1),
-          quality_(0), points_(points), kdtree_index_(3, points_, nanoflann::KDTreeSingleIndexAdaptorParams(10)),
-          search_parameters_(32, 0.0f, false)
+    explicit FECClustering(const PointCloudT &points, CoordinateType distance_threshold = 0,
+                           std::uint32_t min_cluster_size = 1,
+                           std::uint32_t max_cluster_size = std::numeric_limits<std::uint32_t>::max(),
+                           CoordinateType quality = 0.5)
+        : distance_threshold_(distance_threshold), min_cluster_size_(min_cluster_size),
+          max_cluster_size_(max_cluster_size), quality_(quality), points_(points),
+          kdtree_index_(number_of_dimensions, points_, {MAX_LEAF_SIZE}),
+          search_parameters_(IGNORE_CHECKS, USE_APPROXIMATE_SEARCH, SORT_RESULTS)
     {
-        // Check if the number of points is sufficient for clustering
-        if (points_.size() < 2)
+        if (points_.empty())
         {
             return;
         }
-    }
-
-    CoordinateType getClusterTolerance() const noexcept
-    {
-        return cluster_tolerance_;
-    }
-    void setClusterTolerance(CoordinateType cluster_tolerance) noexcept
-    {
-        cluster_tolerance_ = cluster_tolerance;
-    }
-    std::uint32_t getMaxClusterSize() const noexcept
-    {
-        return max_cluster_size_;
-    }
-    void setMaxClusterSize(std::uint32_t max_cluster_size) noexcept
-    {
-        max_cluster_size_ = max_cluster_size;
-    }
-    std::uint32_t getMinClusterSize() const noexcept
-    {
-        return min_cluster_size_;
-    }
-    void setMinClusterSize(std::uint32_t min_cluster_size) noexcept
-    {
-        min_cluster_size_ = min_cluster_size;
-    }
-    CoordinateType getQuality() const noexcept
-    {
-        return quality_;
-    }
-    void setQuality(CoordinateType quality) noexcept
-    {
-        quality_ = quality;
+        if (min_cluster_size < 1)
+        {
+            throw std::runtime_error("Minimum cluster size should not be less than 1");
+        }
+        if (max_cluster_size < min_cluster_size)
+        {
+            throw std::runtime_error("Maximum cluster size should not be less than minimum cluster size");
+        }
+        if (quality < 0.1)
+        {
+            throw std::runtime_error("Minimum allowed cluster quality should not be less than 0.1");
+        }
+        if (quality > 1.0)
+        {
+            std::runtime_error("Maximum allowed cluster quality should not be greater than 1.0");
+        }
     }
 
     const ClusterT getClusterIndices() const noexcept
@@ -89,17 +84,22 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
     {
         cluster_indices_.clear();
 
-        if (points_.size() < 2 || max_cluster_size_ == 0)
+        if (points_.empty())
         {
+            return;
+        }
+        else if (points_.size() == 1)
+        {
+            cluster_indices_[0] = {0};
             return;
         }
 
         const auto number_of_points = static_cast<std::uint32_t>(points_.size());
 
-        const CoordinateType cluster_tolerance_squared = cluster_tolerance_ * cluster_tolerance_;
+        const auto distance_threshold_squared = distance_threshold_ * distance_threshold_;
 
         const auto nn_distance_threshold =
-            static_cast<CoordinateType>(std::pow((1.0 - quality_) * cluster_tolerance_, 2.0));
+            static_cast<CoordinateType>(std::pow((1.0 - quality_) * distance_threshold_, 2.0));
 
         std::vector<bool> removed(number_of_points, false);
 
@@ -134,7 +134,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
                 }
 
                 neighbours.clear();
-                const auto number_of_neighbours = kdtree_index_.radiusSearch(&points_[p][0], cluster_tolerance_squared,
+                const auto number_of_neighbours = kdtree_index_.radiusSearch(&points_[p][0], distance_threshold_squared,
                                                                              neighbours, search_parameters_);
 
                 if (number_of_neighbours > 0)
@@ -170,7 +170,7 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
 
   private:
     // Inputs
-    CoordinateType cluster_tolerance_;
+    CoordinateType distance_threshold_;
     std::uint32_t max_cluster_size_;
     std::uint32_t min_cluster_size_;
     CoordinateType quality_;

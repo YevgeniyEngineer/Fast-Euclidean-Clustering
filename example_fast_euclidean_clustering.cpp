@@ -11,8 +11,9 @@ int main()
     constexpr std::size_t NUMBER_OF_POINTS = 100'000;
     constexpr std::size_t NUMBER_OF_DIMENSIONS = 3;
     constexpr std::size_t NUMBER_OF_ITERATIONS = 100;
-    constexpr std::size_t MIN_CLUSTER_SIZE = 3;
-    constexpr std::size_t MAX_CLUSTER_SIZE = std::numeric_limits<std::size_t>::max();
+    constexpr std::uint32_t MIN_CLUSTER_SIZE = 3;
+    constexpr std::uint32_t MAX_CLUSTER_SIZE = std::numeric_limits<std::uint32_t>::max();
+    constexpr double QUALITY = 0.5;
 
     constexpr double NEAREST_NEIGHBOUR_PROXIMITY = 5.0;
 
@@ -39,10 +40,8 @@ int main()
 
     auto t1 = std::chrono::steady_clock::now();
     {
-        clustering::FECClustering<CoordinateType, NUMBER_OF_DIMENSIONS> fast_euclidean_clustering(cloud);
-        fast_euclidean_clustering.setClusterTolerance(NEAREST_NEIGHBOUR_PROXIMITY);
-        fast_euclidean_clustering.setMinClusterSize(MIN_CLUSTER_SIZE);
-        fast_euclidean_clustering.setQuality(1.0);
+        clustering::FECClustering<CoordinateType, NUMBER_OF_DIMENSIONS> fast_euclidean_clustering(
+            cloud, NEAREST_NEIGHBOUR_PROXIMITY, MIN_CLUSTER_SIZE, MAX_CLUSTER_SIZE, QUALITY);
 
         fast_euclidean_clustering.formClusters();
 
