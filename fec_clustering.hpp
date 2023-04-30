@@ -53,10 +53,6 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
           kdtree_index_(number_of_dimensions, points_, {MAX_LEAF_SIZE}),
           search_parameters_(IGNORE_CHECKS, USE_APPROXIMATE_SEARCH, SORT_RESULTS)
     {
-        if (points_.empty())
-        {
-            return;
-        }
         if (min_cluster_size_ < 1)
         {
             throw std::runtime_error("Minimum cluster size should not be less than 1");
@@ -71,7 +67,11 @@ template <typename CoordinateType, std::uint32_t number_of_dimensions> class FEC
         }
         if (quality_ > 1.0)
         {
-            std::runtime_error("Maximum allowed cluster quality should not be greater than 1.0");
+            throw std::runtime_error("Maximum allowed cluster quality should not be greater than 1.0");
+        }
+        if (points_.empty())
+        {
+            return;
         }
     }
 
